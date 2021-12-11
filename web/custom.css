@@ -1,0 +1,26 @@
+/*! Place your custom styles here */
+body {
+  top: 0px !important;
+}
+
+.skiptranslate,
+google_translate_element {
+  display: none !important;
+}
+
+#arrow {
+  background-image: url(/download/arrow.png);
+  width: 75px;
+  height: 75px;
+  position: fixed;
+  bottom: 10px;
+  left: 20px;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.goog-text-highlight {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
