@@ -430,6 +430,7 @@ EndFunc
 |`Installed`|Whether the virus has activated or not, return `Yes` or `No`|
 |`Version`|Always return `1`|
 |`Trust`|Only send if the virus installed|
+
 <br> Then it sent to the server and wait for the status. If the status is not 200 (Successful), it print the error and exit.
 <br> If status is 200, the server will sent the `7-zip` extractor `7za.exe` and the virus archive `files.7z` download URL.
 <br> I have run this and got the `7-zip` link in the form of `http://pube.me/app/7za.exe?id=somerandomnumberhere` and `files.7z` is `http://pube.me/app/files.7z?id=somerandomnumberhere` with `somerandomnumber` is a 4-digit number, but it doesn't matter.
