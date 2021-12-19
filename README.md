@@ -1602,4 +1602,5 @@ https://www.vmray.com/analyses/89516baa335e/report/ioc.html
 
 ## Similar post
 https://sec.vnpt.vn/2019/05/ma-doc-coinminer-tren-facebook/
+https://tykawaii98.wordpress.com/2019/04/17/my-first-malware-analysis/
 <br> I think they are the same thing but different server :)
